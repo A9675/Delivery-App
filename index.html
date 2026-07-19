@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Trading Demo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <h1>Color Trading Demo</h1>
+  <div class="wallet">Demo Balance: ₹<span id="balance">10000</span></div>
+  <div class="timer">Next Result: <span id="timer">30</span>s</div>
+  <p>Select a color (Demo Coins Only)</p>
+  <div class="buttons">
+    <button class="green" onclick="placeBet('Green')">Green</button>
+    <button class="violet" onclick="placeBet('Violet')">Violet</button>
+    <button class="red" onclick="placeBet('Red')">Red</button>
+  </div>
+  <div class="amount">
+    <label>Demo Amount:</label>
+    <input id="amount" type="number" value="100" min="1">
+  </div>
+  <h2 id="message">Choose a color</h2>
+  <h3>History</h3>
+  <div id="history"></div>
+  <p class="note">Demo only — no real-money deposits or withdrawals.</p>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
