@@ -1,1 +1,903 @@
 
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UPI QR Generator</title>
+
+<style>
+
+
+
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+
+
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  color: #183b2a;
+  background: linear-gradient(145deg,#f3fff8,#dff9eb,#f6fffa);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.dots {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dot {
+  position: absolute;
+  border-radius: 50%;
+  background: #42d779;
+  opacity: .45;
+  animation: floatDot 6s ease-in-out infinite alternate;
+}
+
+.dot:nth-child(1) {
+  width:90px;height:90px;top:5%;left:5%;
+  filter:blur(9px);
+}
+.dot:nth-child(2) {
+  width:22px;height:22px;top:6%;right:10%;
+}
+.dot:nth-child(3) {
+  width:30px;height:30px;top:14%;left:31%;
+}
+.dot:nth-child(4) {
+  width:55px;height:55px;top:23%;right:8%;
+  filter:blur(5px);
+}
+.dot:nth-child(5) {
+  width:20px;height:20px;top:28%;left:9%;
+}
+.dot:nth-child(6) {
+  width:35px;height:35px;bottom:22%;left:18%;
+}
+.dot:nth-child(7) {
+  width:95px;height:95px;bottom:8%;right:4%;
+  filter:blur(10px);
+}
+.dot:nth-child(8) {
+  width:23px;height:23px;bottom:29%;right:20%;
+}
+.dot:nth-child(9) {
+  width:45px;height:45px;bottom:32%;left:5%;
+  filter:blur(6px);
+}
+.dot:nth-child(10) {
+  width:28px;height:28px;bottom:13%;left:24%;
+}
+
+@keyframes floatDot {
+  0% {transform:translate(0,0) scale(1);}
+  50% {transform:translate(25px,-35px) scale(1.12);}
+  100% {transform:translate(-20px,25px) scale(.92);}
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 390px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 22px 20px;
+  border-radius: 32px;
+  text-align: center;
+  background: rgba(255,255,255,.94);
+  border: 1px solid rgba(255,255,255,.95);
+  box-shadow: 0 20px 55px rgba(20,150,80,.16);
+}
+
+.logo {
+  width:76px;
+  height:76px;
+  margin:-2px auto 14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  border:5px solid #e8fff0;
+  border-radius:25px;
+  background:linear-gradient(145deg,#25d366,#008b50);
+  box-shadow:0 8px 22px rgba(0,160,80,.2);
+}
+
+h2 {
+  margin:0;
+  color:#07834c;
+  font-size:27px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+
+.subtitle {
+  margin:7px 0 25px;
+  color:#78857e;
+  font-size:14px;
+}
+
+label {
+  display:block;
+  margin-bottom:10px;
+  text-align:left;
+  font-size:16px;
+  font-weight:700;
+  color:#246447;
+}
+
+#amount {
+  display:block;
+  width:100%;
+  padding:16px;
+  border:2px solid #ccebd9;
+  border-radius:20px;
+  background:#f4fff8;
+  color:#176d3b;
+  font-size:21px;
+  outline:none;
+}
+
+#amount:focus {
+  border-color:#20ad60;
+  box-shadow:0 0 0 3px rgba(32,173,96,.1);
+}
+
+button {
+  display:block;
+  width:100%;
+  min-height:52px;
+  padding:15px;
+  margin-top:18px;
+  border:0;
+  border-radius:19px;
+  background:linear-gradient(100deg,#20ce70,#00854b);
+  color:white;
+  font-size:18px;
+  font-weight:800;
+  box-shadow:0 9px 22px rgba(0,160,80,.24);
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+button:active {
+  transform:scale(.98);
+}
+
+.hidden {
+  display:none !important;
+}
+
+/* Round three-dot menu outside the card */
+.menu-btn {
+  position:fixed;
+  top:8px;
+  right:8px;
+  width:44px;
+  height:44px;
+  min-height:44px;
+  margin:0;
+  padding:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border:1px solid #ccebd9;
+  border-radius:50%;
+  background:#e1f8e9;
+  color:#07834c;
+  box-shadow:0 3px 12px rgba(0,0,0,.10);
+  font-size:27px;
+  line-height:1;
+  z-index:1000;
+}
+
+.menu-btn:active {
+  transform:scale(.92);
+}
+
+/* Settings popup */
+.upi-menu {
+  display:none;
+  position:fixed;
+  top:60px;
+  right:8px;
+  width:min(320px,calc(100vw - 16px));
+  z-index:1001;
+  padding:16px;
+  background:#fff;
+  border:1px solid #ccebd9;
+  border-radius:18px;
+  box-shadow:0 8px 25px #0002;
+  text-align:left;
+}
+
+.upi-menu.open {
+  display:block;
+}
+
+.upi-menu input {
+  display:block;
+  width:100%;
+  padding:13px;
+  margin-top:8px;
+  border:1px solid #ccebd9;
+  border-radius:12px;
+  font-size:15px;
+  color:#176d3b;
+  outline:none;
+}
+
+.upi-menu button {
+  min-height:44px;
+  margin-top:10px;
+  padding:12px;
+  font-size:15px;
+}
+
+#upiMessage {
+  margin-top:8px;
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
+
+#result {
+  display:none;
+  margin-top:14px;
+  padding:13px 10px;
+  border:1px solid #dcefe2;
+  border-radius:20px;
+  background:linear-gradient(180deg,#f2fff6,#fff);
+}
+
+#result.show {
+  display:block;
+}
+
+.success {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:7px 12px;
+  border-radius:20px;
+  background:#e6f7ec;
+  color:#168345;
+  font-size:12px;
+  font-weight:700;
+}
+
+.amount-display {
+  margin-top:10px;
+  color:#07834c;
+  font-size:31px;
+  font-weight:800;
+}
+
+.scan-text {
+  margin-top:5px;
+  color:#788c7f;
+  font-size:12px;
+}
+
+#qr {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  margin:12px auto 0;
+}
+
+#qr canvas {
+  display:block;
+  width:200px;
+  max-width:100%;
+  height:auto;
+  padding:6px;
+  border:1px solid #d7eadf;
+  border-radius:12px;
+  background:white;
+  image-rendering:pixelated;
+}
+
+#status {
+  margin-top:12px;
+  color:#c23b3b;
+  font-size:13px;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+
+@media (max-height:700px) {
+  .card {
+    padding:13px;
+    border-radius:24px;
+  }
+  .logo {
+    width:46px;height:46px;margin-bottom:8px;
+    border-width:3px;border-radius:16px;
+  }
+  .logo svg {width:24px;height:24px;}
+  h2 {font-size:22px;}
+  .subtitle {margin:4px 0 12px;font-size:12px;}
+  #amount {padding:12px;font-size:18px;}
+  button {min-height:44px;padding:11px;margin-top:12px;font-size:16px;}
+  #result {margin-top:8px;padding:8px;}
+  .amount-display {font-size:25px;margin-top:6px;}
+  #qr {margin-top:7px;}
+  #qr canvas {width:155px;}
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .dot {animation:none;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="dots" aria-hidden="true">
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+
+<!-- Round button with three horizontal dots -->
+<button type="button" class="menu-btn"
+        onclick="toggleUpiMenu()"
+        aria-label="UPI Settings">⋯</button>
+
+<!-- UPI settings popup -->
+<div class="upi-menu" id="upiMenu">
+  <label for="upiInput">UPI ID अपडेट करें</label>
+
+  <input id="upiInput" type="text"
+         placeholder="example@upi"
+         autocomplete="off"
+         spellcheck="false">
+
+  <button type="button" onclick="saveUpi()">
+    UPI ID सेव करें
+  </button>
+
+  <div id="upiMessage" role="status"></div>
+</div>
+
+<div class="card">
+
+  <div class="logo">
+    <svg width="36" height="36" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.4"
+         stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <path d="M14 14h3v3h-3zM20 14v2M17 20h4M20 18v3"/>
+    </svg>
+  </div>
+
+  <h2>UPI QR Generator</h2>
+  <div class="subtitle">Simple · Fast · Convenient</div>
+
+  <div class="hidden">
+    <input id="upi" type="hidden"
+           value="ombk.aahh18071v2htcl0p8u@mbk">
+    <input id="name" type="hidden" value="Anil Kumar">
+    <input id="note" type="hidden" value="Payment">
+  </div>
+
+  <div id="entry">
+    <label for="amount">भुगतान की रकम (₹)</label>
+
+    <input id="amount" type="number"
+           min="1" step="0.01"
+           placeholder="₹ रकम डालें"
+           inputmode="decimal">
+
+    <button id="generateBtn" type="button"
+            onclick="makeQR()">
+      Generate QR &nbsp; →
+    </button>
+  </div>
+
+  <div id="result">
+    <div class="success">✓ &nbsp; QR तैयार है</div>
+    <div class="amount-display" id="amountDisplay">₹0.00</div>
+    <div class="scan-text">अपने UPI ऐप से स्कैन करें</div>
+    <div id="qr"></div>
+  </div>
+
+  <div id="status" role="status"></div>
+
+  <button id="regenerateBtn" class="hidden"
+          type="button" onclick="resetQR()">
+    ↻ &nbsp; Re-Generate QR
+  </button>
+
+</div>
+
+<script>
+/* QR encoder: byte mode, error correction L */
+
+const BLOCKS = {
+  1:[[26,19]], 2:[[44,34]], 3:[[70,55]],
+  4:[[100,80]], 5:[[134,108]],
+  6:[[86,68],[86,68]],
+  7:[[98,78],[98,78]],
+  8:[[121,97],[121,97]],
+  9:[[146,116],[146,116]],
+  10:[[86,68],[86,68],[87,69],[87,69]]
+};
+
+const ALIGN = {
+  1:[], 2:[6,18], 3:[6,22], 4:[6,26],
+  5:[6,30], 6:[6,22,38], 7:[6,24,42],
+  8:[6,26,46], 9:[6,28,50], 10:[6,30,54]
+};
+
+function mul(x,y) {
+  let z=0;
+  for(let i=7;i>=0;i--) {
+    z=(z<<1)^((z>>>7)*0x11d);
+    if((y>>>i)&1) z^=x;
+  }
+  return z;
+}
+
+function divisor(n) {
+  let a=Array(n).fill(0);
+  a[n-1]=1;
+  let root=1;
+
+  for(let i=0;i<n;i++) {
+    for(let j=0;j<n;j++) {
+      a[j]=mul(a[j],root);
+      if(j+1<n) a[j]^=a[j+1];
+    }
+    root=mul(root,2);
+  }
+  return a;
+}
+
+function remainder(data,div) {
+  let r=Array(div.length).fill(0);
+
+  for(const b of data) {
+    const f=b^r[0];
+    r.shift();
+    r.push(0);
+    for(let i=0;i<r.length;i++) r[i]^=mul(div[i],f);
+  }
+  return r;
+}
+
+function bits(a,v,n) {
+  for(let i=n-1;i>=0;i--) a.push((v>>>i)&1);
+}
+
+function codewords(bytes,v) {
+  const blocks=BLOCKS[v];
+  const cap=blocks.reduce((s,b)=>s+b[1],0);
+  const a=[];
+
+  bits(a,4,4);
+  bits(a,bytes.length,8);
+  for(const b of bytes) bits(a,b,8);
+
+  if(a.length>cap*8) throw Error("जानकारी बहुत लंबी है");
+
+  bits(a,0,Math.min(4,cap*8-a.length));
+  while(a.length%8) a.push(0);
+
+  const data=[];
+  for(let i=0;i<a.length;i+=8) {
+    let n=0;
+    for(let j=0;j<8;j++) n=n*2+a[i+j];
+    data.push(n);
+  }
+
+  for(let p=0;data.length<cap;p++) data.push(p%2?17:236);
+
+  let pos=0,ds=[],es=[];
+
+  for(const [total,dlen] of blocks) {
+    const d=data.slice(pos,pos+dlen);
+    pos+=dlen;
+    ds.push(d);
+    es.push(remainder(d,divisor(total-dlen)));
+  }
+
+  const out=[];
+
+  for(let i=0;i<Math.max(...ds.map(x=>x.length));i++)
+    for(const d of ds) if(i<d.length) out.push(d[i]);
+
+  for(let i=0;i<Math.max(...es.map(x=>x.length));i++)
+    for(const e of es) if(i<e.length) out.push(e[i]);
+
+  return out;
+}
+
+function masked(k,r,c) {
+  switch(k) {
+    case 0:return (r+c)%2===0;
+    case 1:return r%2===0;
+    case 2:return c%3===0;
+    case 3:return (r+c)%3===0;
+    case 4:return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+    case 5:return (r*c)%2+(r*c)%3===0;
+    case 6:return ((r*c)%2+(r*c)%3)%2===0;
+    case 7:return ((r+c)%2+(r*c)%3)%2===0;
+  }
+}
+
+function qrMatrix(v,cw,mask) {
+  const n=17+4*v;
+  const m=Array.from({length:n},()=>Array(n).fill(null));
+
+  function set(r,c,b) {
+    if(r>=0&&r<n&&c>=0&&c<n) m[r][c]=!!b;
+  }
+
+  function finder(r,c) {
+    for(let y=-1;y<=7;y++) for(let x=-1;x<=7;x++) {
+      const inside=x>=0&&x<=6&&y>=0&&y<=6;
+      set(r+y,c+x,inside&&(
+        x===0||x===6||y===0||y===6||
+        (x>=2&&x<=4&&y>=2&&y<=4)
+      ));
+    }
+  }
+
+  finder(0,0);
+  finder(0,n-7);
+  finder(n-7,0);
+
+  for(let i=8;i<n-8;i++) {
+    set(6,i,i%2===0);
+    set(i,6,i%2===0);
+  }
+
+  for(const r of ALIGN[v]) for(const c of ALIGN[v]) {
+    if(m[r][c]!==null) continue;
+    for(let y=-2;y<=2;y++) for(let x=-2;x<=2;x++)
+      set(r+y,c+x,Math.max(Math.abs(x),Math.abs(y))!==1);
+  }
+
+  for(let i=0;i<15;i++) {
+    if(i<6) set(i,8,false);
+    else if(i<8) set(i+1,8,false);
+    else set(n-15+i,8,false);
+
+    if(i<8) set(8,n-i-1,false);
+    else if(i===8) set(8,7,false);
+    else set(8,14-i,false);
+  }
+
+  set(n-8,8,true);
+
+  if(v>=7) {
+    let rem=v;
+    for(let i=0;i<12;i++)
+      rem=(rem<<1)^(((rem>>>11)&1)*0x1f25);
+
+    const b=(v<<12)|rem;
+    for(let i=0;i<18;i++) {
+      const bit=((b>>>i)&1)!==0;
+      set(Math.floor(i/3),i%3+n-11,bit);
+      set(i%3+n-11,Math.floor(i/3),bit);
+    }
+  }
+
+  let idx=0,up=true;
+
+  for(let right=n-1;right>=1;right-=2) {
+    if(right===6) right=5;
+
+    for(let y=0;y<n;y++) {
+      const r=up?n-1-y:y;
+
+      for(let j=0;j<2;j++) {
+        const c=right-j;
+        if(m[r][c]!==null) continue;
+
+        let b=idx<cw.length*8
+          ?((cw[idx>>>3]>>>(7-(idx&7)))&1)!==0
+          :false;
+
+        idx++;
+        if(masked(mask,r,c)) b=!b;
+        m[r][c]=b;
+      }
+    }
+    up=!up;
+  }
+
+  const d=8|mask;
+  let rem=d;
+
+  for(let i=0;i<10;i++)
+    rem=(rem<<1)^(((rem>>>9)&1)*0x537);
+
+  const fmt=((d<<10)|rem)^0x5412;
+
+  for(let i=0;i<15;i++) {
+    const b=((fmt>>>i)&1)!==0;
+
+    if(i<6) set(i,8,b);
+    else if(i<8) set(i+1,8,b);
+    else set(n-15+i,8,b);
+
+    if(i<8) set(8,n-i-1,b);
+    else if(i===8) set(8,7,b);
+    else set(8,14-i,b);
+  }
+
+  set(n-8,8,true);
+  return m;
+}
+
+function penalty(m) {
+  const n=m.length;
+  let p=0;
+
+  for(let r=0;r<n;r++) {
+    let run=1;
+    for(let c=1;c<n;c++) {
+      if(m[r][c]===m[r][c-1]) {
+        run++;
+        if(run===5) p+=3;
+        else if(run>5) p++;
+      } else run=1;
+    }
+
+    const s=m[r].map(x=>x?'1':'0').join('');
+    p+=40*((s.match(/10111010000/g)||[]).length+
+           (s.match(/00001011101/g)||[]).length);
+  }
+
+  for(let c=0;c<n;c++) {
+    let run=1;
+    for(let r=1;r<n;r++) {
+      if(m[r][c]===m[r-1][c]) {
+        run++;
+        if(run===5) p+=3;
+        else if(run>5) p++;
+      } else run=1;
+    }
+
+    const s=m.map(row=>row[c]?'1':'0').join('');
+    p+=40*((s.match(/10111010000/g)||[]).length+
+           (s.match(/00001011101/g)||[]).length);
+  }
+
+  for(let r=0;r<n-1;r++) for(let c=0;c<n-1;c++)
+    if(m[r][c]===m[r+1][c]&&m[r][c]===m[r][c+1]&&
+       m[r][c]===m[r+1][c+1]) p+=3;
+
+  let dark=0;
+  for(const row of m) for(const b of row) if(b) dark++;
+
+  return p+Math.floor(Math.abs(dark*100/(n*n)-50)/5)*10;
+}
+
+function encodeQR(text) {
+  const bytes=Array.from(new TextEncoder().encode(text));
+  let cw,v;
+
+  for(let i=1;i<=10;i++) {
+    try {
+      cw=codewords(bytes,i);
+      v=i;
+      break;
+    } catch(e) {}
+  }
+
+  if(!v) throw Error("QR में जानकारी बहुत लंबी है");
+
+  let best,bestScore=Infinity;
+
+  for(let k=0;k<8;k++) {
+    const m=qrMatrix(v,cw,k);
+    const score=penalty(m);
+
+    if(score<bestScore) {
+      best=m;
+      bestScore=score;
+    }
+  }
+
+  return best;
+}
+
+/* Persistent UPI settings */
+
+const UPI_KEY = "saved_upi_id";
+
+function loadSavedUpi() {
+  const saved = localStorage.getItem(UPI_KEY);
+
+  if(saved) {
+    document.getElementById("upi").value = saved;
+  }
+
+  document.getElementById("upiInput").value =
+    document.getElementById("upi").value;
+}
+
+function toggleUpiMenu() {
+  const menu = document.getElementById("upiMenu");
+  const opening = !menu.classList.contains("open");
+
+  menu.classList.toggle("open");
+
+  if(opening) {
+    document.getElementById("upiInput").value =
+      document.getElementById("upi").value;
+
+    document.getElementById("upiMessage").textContent = "";
+  }
+}
+
+function saveUpi() {
+  const upi = document.getElementById("upiInput")
+    .value.trim();
+
+  const message = document.getElementById("upiMessage");
+
+  if(!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$/.test(upi)) {
+    message.style.color = "#c23b3b";
+    message.textContent = "कृपया सही UPI ID डालें।";
+    return;
+  }
+
+  try {
+    localStorage.setItem(UPI_KEY,upi);
+    document.getElementById("upi").value = upi;
+
+    message.style.color = "#07834c";
+    message.textContent = "UPI ID सेव हो गई।";
+
+    setTimeout(function() {
+      document.getElementById("upiMenu")
+        .classList.remove("open");
+
+      if(document.getElementById("result")
+          .classList.contains("show")) {
+        resetQR();
+      }
+    },700);
+
+  } catch(e) {
+    message.style.color = "#c23b3b";
+    message.textContent =
+      "सेव नहीं हुआ। WebView DOM Storage चालू करें।";
+  }
+}
+
+/* QR generation */
+
+function makeQR() {
+  const upi = document.getElementById("upi").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const amount = document.getElementById("amount").value;
+  const note = document.getElementById("note").value.trim();
+
+  const status = document.getElementById("status");
+  const holder = document.getElementById("qr");
+
+  status.textContent = "";
+  holder.innerHTML = "";
+
+  if(!upi || !amount ||
+     !Number.isFinite(+amount) || +amount<=0) {
+    status.textContent = "कृपया सही रकम डालें";
+    return;
+  }
+
+  try {
+    const p = new URLSearchParams({
+      pa:upi,
+      pn:name,
+      cu:"INR"
+    });
+
+    p.set("am",(+amount).toFixed(2));
+    if(note) p.set("tn",note);
+
+    const m = encodeQR("upi://pay?"+p.toString());
+
+    const quiet=4, scale=6, n=m.length;
+    const canvas=document.createElement("canvas");
+
+    canvas.width=canvas.height=(n+quiet*2)*scale;
+
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#fff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#000";
+
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++) {
+      if(m[r][c]) {
+        ctx.fillRect(
+          (c+quiet)*scale,
+          (r+quiet)*scale,
+          scale,
+          scale
+        );
+      }
+    }
+
+    holder.appendChild(canvas);
+
+    document.getElementById("amountDisplay").textContent =
+      "₹"+(+amount).toFixed(2);
+
+    document.getElementById("entry").classList.add("hidden");
+    document.getElementById("result").classList.add("show");
+    document.getElementById("regenerateBtn").classList.remove("hidden");
+
+  } catch(e) {
+    status.textContent="QR त्रुटि: "+e.message;
+  }
+}
+
+function resetQR() {
+  document.getElementById("entry").classList.remove("hidden");
+  document.getElementById("result").classList.remove("show");
+  document.getElementById("regenerateBtn").classList.add("hidden");
+
+  document.getElementById("qr").innerHTML="";
+  document.getElementById("status").textContent="";
+  document.getElementById("amount").value="";
+}
+
+/* Restore the saved ID when page opens */
+try {
+  loadSavedUpi();
+} catch(e) {
+  document.getElementById("status").textContent =
+    "UPI ID लोड नहीं हुई। WebView DOM Storage चालू करें।";
+}
+</script>
+
+</body>
+</html>
+
